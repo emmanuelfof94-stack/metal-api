@@ -10,4 +10,7 @@ RUN npx prisma generate && npm run build
 
 EXPOSE 3000
 
-CMD npx prisma migrate deploy && node dist/main
+COPY start.sh .
+RUN chmod +x start.sh
+
+CMD ["./start.sh"]
