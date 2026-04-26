@@ -1,10 +1,19 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, OnApplicationBootstrap, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreatePricingItemDto } from './dto/create-pricing-item.dto';
 
 @Injectable()
-export class PricingService {
+export class PricingService implements OnApplicationBootstrap {
+  private readonly logger = new Logger(PricingService.name);
   constructor(private readonly prisma: PrismaService) {}
+
+  async onApplicationBootstrap() {
+    const count = await this.prisma.pricingItem.count();
+    if (count === 0) {
+      this.logger.log('PricingItem table empty — seeding default prices');
+      await this.seedDefaultPrices();
+    }
+  }
 
   findAll(category?: string) {
     return this.prisma.pricingItem.findMany({
